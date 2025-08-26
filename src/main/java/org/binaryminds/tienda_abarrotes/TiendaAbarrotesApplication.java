@@ -1,6 +1,8 @@
 package org.binaryminds.tienda_abarrotes;
 
+import org.binaryminds.tienda_abarrotes.dominio.service.ICompraService;
 import org.binaryminds.tienda_abarrotes.dominio.service.IProductoService;
+import org.binaryminds.tienda_abarrotes.persistence.entity.Compra;
 import org.binaryminds.tienda_abarrotes.persistence.entity.Producto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,9 @@ public class TiendaAbarrotesApplication implements CommandLineRunner{
 
 	@Autowired
 	private IProductoService productoService;
+
+	@Autowired
+	private ICompraService compraService;
 
 	private static final Logger logger = LoggerFactory.getLogger(TiendaAbarrotesApplication.class);
 
@@ -51,7 +56,8 @@ public class TiendaAbarrotesApplication implements CommandLineRunner{
 				4. Modificar producto.
 				5. Eliminar producto.
 				6. Realizar compra.
-				7. Salir.
+				7. Ver compras realizadas.
+				8. Salir.
 				Elije una opción: \s""");
 		var opcion = Integer.parseInt(consola.nextLine());
 		return opcion;
@@ -133,14 +139,65 @@ public class TiendaAbarrotesApplication implements CommandLineRunner{
 				logger.info(sl+"Ingrese el codigo del producto que desea comprar: ");
 				var codigo = Integer.parseInt(consola.nextLine());
 				var producto = productoService.buscarProductoPorId(codigo);
+				if (producto==null){
+					logger.info(sl+"Código de producto inválido"+sl);
+				}else {
+					logger.info(sl+"Ingrese la cantidad que desea comprar de " + producto.getNombre() + ": ");
+					var cantidad = Integer.parseInt(consola.nextLine());
+					if (cantidad <= 0){
+						logger.info(sl+"Cantidad de producto inválida"+sl);
+					}else if(cantidad > producto.getStock()) {
+						logger.info(sl+"Lo sentimos, solo hay "+producto.getStock()+" existencias de "+producto.getNombre());
+					}else {
+						if (cantidad >=3 && cantidad < 6) {
+							var total = (cantidad * producto.getPrecio()) * 0.90;
+							var compra = new Compra();
+							compra.setProducto(producto);
+							compra.setCantidad(cantidad);
+							compra.setTotal(total);
+							compraService.guardarCompra(compra);
+							producto.setStock(producto.getStock()-cantidad);
+							productoService.guardarProducto(producto);
+							logger.info(sl + "Compra completada correctamente, descuento aplicado del 10%."+sl);
+							logger.info("Total (sin descuento): Q"+cantidad*producto.getPrecio()+", Total: "+total+sl);
+						} else if (cantidad >= 6 && cantidad < 10) {
+							var total = (cantidad * producto.getPrecio()) * 0.75;
+							var compra = new Compra();
+							compra.setProducto(producto);
+							compra.setCantidad(cantidad);
+							compra.setTotal(total);
+							compraService.guardarCompra(compra);
+							producto.setStock(producto.getStock()-cantidad);
+							productoService.guardarProducto(producto);
+							logger.info(sl+"Compra agregada correctamente, descuento aplicado del 25%."+sl);
+							logger.info("Total (sin descuento): Q"+cantidad*producto.getPrecio()+", Total: "+total+sl);
+						} else if (cantidad > 10) {
+							var total = (cantidad * producto.getPrecio()) * 0.50;
+							var compra = new Compra();
+							compra.setProducto(producto);
+							compra.setCantidad(cantidad);
+							compra.setTotal(total);
+							compraService.guardarCompra(compra);
+							producto.setStock(producto.getStock()-cantidad);
+							productoService.guardarProducto(producto);
+							logger.info(sl+"Compra agregada correctamente, descuento aplicado del 50%."+sl);
+							logger.info("Total (sin descuento): Q"+cantidad*producto.getPrecio()+", Total: "+total+sl);
+						}
+					}
+				}
 			}
 			case 7 -> {
+				logger.info("***Listado de todas las compras***"+sl);
+				List<Compra> compras = compraService.listarCompras();
+				compras.forEach(compra -> logger.info(compra.toString()+sl));
+			}
+			case 8 -> {
 				logger.info("Hasta pronto. vaquero!"+sl+sl);
 				salir = true;
 				System.exit(0);
 			}
 			default -> {
-
+				logger.info(sl+"Opción inválida"+sl);
 			}
 		}
 		return false;

@@ -12,7 +12,7 @@ import lombok.*;
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer codigoProducto;
+    private Integer codigo_producto;
     @Column
     private String nombre;
     private double precio;

@@ -12,9 +12,11 @@ import lombok.*;
 public class Compra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer codigoCompra;
+    private Integer codigo_compra;
+    @ManyToOne
+    @JoinColumn(name = "codigo_producto", referencedColumnName = "codigo_producto")
+    private Producto producto;
     @Column
-    private Integer codigoProducto;
-    private String cantidad;
+    private Integer cantidad;
     private double total;
 }
