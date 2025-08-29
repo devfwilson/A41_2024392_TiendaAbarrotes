@@ -23,4 +23,9 @@ public class CompraService implements ICompraService{
     public void guardarCompra(Compra compra) {
         crud.save(compra);
     }
+
+    @Override
+    public void eliminarCompra(Compra compra) {
+        crud.delete(compra);
+    }
 }

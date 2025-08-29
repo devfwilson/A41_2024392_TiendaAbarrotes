@@ -7,4 +7,5 @@ import java.util.List;
 public interface ICompraService {
     List<Compra> listarCompras();
     void guardarCompra(Compra compra);
+    void eliminarCompra(Compra compra);
 }

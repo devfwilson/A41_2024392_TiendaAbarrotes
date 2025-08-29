@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<h:html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://xmlns.jcp.org/jsf/html"
+        xmlns:f="http://xmlns.jcp.org/jsf/core"
+        xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Tienda de abarrotes - 2024392</title>
+        <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css"/>
+        <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/themes/primeone-dark.css"/>
+    </h:head>
+    <h:body>
+        <div class="card">
+            <h:form id="formulario-productos">
+                <!--                    Mensaje emergente-->
+                <p:growl id="mensaje_emergente" showDetails="true"/>
+                <!--                    Barra de menus-->
+                <div class="card">
+                    <p:menubar>
+                        <p:menuitem value="Inicio" icon="pi pi-fw pi-user"
+                                    update=":formulario-productos:tabla-productos"
+                                    actionListener="#{indexController.cargarDatos}"/>
+
+                        <p:menuitem value="Nuevo Producto" icon="pi pi-fw pi-plus"
+                                    actionListener="#{indexController.agregarProducto}"
+                                    update=":formulario-modal-producto:ventana-producto"
+                                    oncomplete="PF('ventanaModalProducto').show()"/>
+
+                        <p:menuitem value="Comprar" icon="pi pi-shopping-cart"
+                                    actionListener="#{indexController.agregarCompra}"
+                                    update=":formulario-modal-compra:ventana-compra"
+                                    oncomplete="PF('ventanaModalCompra').show()"/>
+
+                        <p:menuitem value="Listar Compras" icon="pi pi-shopping-bag
+"/>
+                        <!--                                    update=":formulario-compras:tabla-compras"-->
+                        <!--                                    actionListener="#{indexController.cargarDatos}"-->
+                        <!--                                    oncomplete="PF('ventanaListarCompras').show()"-->
+
+                    </p:menubar>
+                </div>
+                <!--                Tabla de datos-->
+                <div class="card">
+                    <p:dataTable value="#{indexController.productos}" var="producto" id="tabla-productos" widgetVar="tablaProductos">
+                        <!--                        Encabezado-->
+                        <f:facet name="header">
+                            <div class="flex justify-content-center flex-wrap card-container yellow-container">
+                                <div class="flex align-items-center
+                                            justify-content-center
+                                            w-20rem h-4rem
+                                            bg-yellow-500 font-bold
+                                            text-gray-900 border-roun m-2">
+                                    <h3>PRODUCTOS DISPONIBLES</h3>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <!--                        Todas las columnas-->
+                        <p:column headerText="ID" sortable="true" sortBy="#{producto.codigo_producto}" filterBy="#{producto.codigo_producto}">
+                            <h:outputText value="#{producto.codigo_producto}"></h:outputText>
+                        </p:column>
+                        <p:column headerText="NOMBRE" sortable="true" sortBy="#{producto.nombre}" filterBy="#{producto.nombre}">
+                            <h:outputText value="#{producto.nombre}"></h:outputText>
+                        </p:column>
+                        <p:column headerText="PRECIO" sortable="true" sortBy="#{producto.precio}" filterBy="#{producto.precio}">
+                            <h:outputText value="#{producto.precio}"></h:outputText>
+                        </p:column>
+                        <p:column headerText="STOCK" sortable="true" sortBy="#{producto.stock}" filterBy="#{producto.stock}">
+                            <h:outputText value="#{producto.stock}"></h:outputText>
+                        </p:column>
+                        <p:column headerText="OPCIÓN">
+                            <p:commandButton value="Editar"
+                                             icon="pi pi-pencil"
+                                             update="formulario-modal-producto:ventana-producto"
+                                             process="@this" style="margin-right: 5rem"
+                                             oncomplete="PF('ventanaModalProducto').show()">
+                                <f:setPropertyActionListener value="#{producto}"
+                                                             target="#{indexController.productoSeleccionado}"/>
+                                <p:resetInput target=":formulario-modal-producto:ventana-producto"/>
+                            </p:commandButton>
+                            <p:commandButton value="Eliminar" icon="pi pi-trash"
+                                             class="ui-button-danger" process="@this"
+                                             oncomplete="PF('ventanaEliminarProducto').show()">
+                                <f:setPropertyActionListener
+                                        value="#{producto}"
+                                        target="#{indexController.productoSeleccionado}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </h:form>
+            <h:form id="formulario-modal-producto">
+                <p:dialog header="Detalle del Producto" showEffect="fade"
+                          modal="true" widgetVar="ventanaModalProducto" responsive="true">
+                    <p:outputPanel id="ventana-producto" class="ui-fluid">
+                        <div class="field">
+                            <p:outputLabel for="nombre">NOMBRE</p:outputLabel>
+                            <p:inputText id="nombre" required="true"
+                                         value="#{indexController.productoSeleccionado.nombre}"/>
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="precio">PRECIO</p:outputLabel>
+                            <p:inputText id="precio"
+                                         value="#{indexController.productoSeleccionado.precio}"/>
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="stock">STOCK</p:outputLabel>
+                            <p:inputText id="stock"
+                                         value="#{indexController.productoSeleccionado.stock}"/>
+                        </div>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton value="Guardar" icon="pi pi-check"
+                                         class="ui-button-primary"
+                                         process="ventana-producto @this"
+                                         actionListener="#{indexController.guardarProducto}"/>
+                        <p:commandButton value="Cancelar" icon="pi pi-times" class="ui-button-secondary"
+                                         onclick="PF('ventanaModalProducto').hide()" type="button"/>
+                    </f:facet>
+                </p:dialog>
+                <p:confirmDialog widgetVar="ventanaEliminarProducto" showEffect="fade"
+                                 width="300" message="¿Desea eliminar el producto?"
+                                 header="Confirme su selección" severity="warn">
+                    <p:commandButton value="Si" icon="pi pi-check" style="ui-button-primary"
+                                     process="@this"
+                                     actionListener="#{indexController.eliminarProducto}"
+                                     oncomplete="PF('ventanaEliminarProducto').hide()"/>
+                    <p:commandButton value="No" icon="pi pi-times" style="ui-button-warning"
+                                     onclick="PF('ventanaEliminarProducto').hide()"
+                                     type="button"/>
+                </p:confirmDialog>
+            </h:form>
+            <!--            COMPRAS-->
+            <h:form id="formulario-modal-compra">
+                <p:dialog header="Detalle de la Compra" showEffect="fade"
+                          modal="true" widgetVar="ventanaModalCompra" responsive="true">
+                    <p:outputPanel id="ventana-compra" class="ui-fluid">
+                        <div class="field">
+                            <p:outputLabel for="producto">PRODUCTO</p:outputLabel>
+                            <p:inputText id="producto" required="true"
+                                         value="#{indexController.compraSeleccionada.producto}"/>
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="cantidad">CANTIDAD</p:outputLabel>
+                            <p:inputText id="cantidad" required="true"
+                                         value="#{indexController.compraSeleccionada.cantidad}"/>
+                        </div>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton value="Guardar" icon="pi pi-check"
+                                         class="ui-button-primary"
+                                         process="ventana-compra @this"
+                                         actionListener="#{indexController.guardarCompra}"/>
+                        <p:commandButton value="Cancelar" icon="pi pi-times" class="ui-button-secondary"
+                                         onclick="PF('ventanaModalCompra').hide()" type="button"/>
+                    </f:facet>
+                </p:dialog>
+                <p:dialog header="Compras Realizadas" showEffect="fade"
+                          modal="true" widgetVar="ventanaListarCompras" responsive="true">
+                    <div class="card">
+                        <p:dataTable value="#{indexController.compras}" var="compra" id="tabla-compras" widgetVar="tablaCompras">
+                            <!--                        Encabezado-->
+                            <f:facet name="header">
+                                <div class="flex justify-content-center flex-wrap card-container yellow-container">
+                                    <div class="flex align-items-center
+                                            justify-content-center
+                                            w-20rem h-4rem
+                                            bg-yellow-500 font-bold
+                                            text-gray-900 border-roun m-2">
+                                        <h3>COMPRAS REALIZADAS</h3>
+                                    </div>
+                                </div>
+                            </f:facet>
+                            <!--                        Todas las columnas-->
+                            <p:column headerText="ID" sortable="true" sortBy="#{compra.codigo_compra}" filterBy="#{compra.codigo_compra}">
+                                <h:outputText value="#{compra.codigo_compra}"></h:outputText>
+                            </p:column>
+                            <p:column headerText="PRODUCTO" sortable="true" sortBy="#{compra.producto}" filterBy="#{compra.producto}">
+                                <h:outputText value="#{compra.producto}"></h:outputText>
+                            </p:column>
+                            <p:column headerText="CANTIDAD" sortable="true" sortBy="#{compra.cantidad}" filterBy="#{compra.cantidad}">
+                                <h:outputText value="#{compra.cantidad}"></h:outputText>
+                            </p:column>
+                            <p:column headerText="TOTAL" sortable="true" sortBy="#{compra.total}" filterBy="#{compra.total}">
+                                <h:outputText value="#{compra.total}"></h:outputText>
+                            </p:column>
+                            <p:column headerText="OPCIÓN">
+                                <p:commandButton value="Eliminar" icon="pi pi-trash"
+                                                 class="ui-button-danger" process="@this"
+                                                 oncomplete="PF('ventanaEliminarCompra').show()">
+                                    <f:setPropertyActionListener
+                                            value="#{compra}"
+                                            target="#{indexController.compraSeleccionada}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                        <f:facet name="footer">
+                            <p:commandButton value="Cerrar" icon="pi pi-times" class="ui-button-secondary"
+                                             onclick="PF('ventanaListarCompras').hide()" type="button"/>
+                        </f:facet>
+                    </div>
+                </p:dialog>
+                <p:confirmDialog widgetVar="ventanaEliminarCompra" showEffect="fade"
+                                 width="300" message="¿Desea eliminar la compra?"
+                                 header="Confirme su selección" severity="warn">
+                    <p:commandButton value="Si" icon="pi pi-check" style="ui-button-primary"
+                                     process="@this"
+                                     actionListener="#{indexController.eliminarCompra}"
+                                     oncomplete="PF('ventanaEliminarCompra').hide()"/>
+                    <p:commandButton value="No" icon="pi pi-times" style="ui-button-warning"
+                                     onclick="PF('ventanaEliminarCompra').hide()"
+                                     type="button"/>
+                </p:confirmDialog>
+            </h:form>
+        </div>
+    </h:body>
+</h:html>
